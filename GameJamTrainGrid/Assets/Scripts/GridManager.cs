@@ -39,17 +39,17 @@ public class GridManager : MonoBehaviour
     [SerializeField]
     private GameObject gridObject;
     [SerializeField]
-    GameObject trainObject;
+    private GameObject trainObject;
 
     [SerializeField]
-    List<TrainData> trainDataList = new List<TrainData>();
+    private List<TrainData> trainDataList = new List<TrainData>();
 
     
-    List<PathStruct> pathList = new List<PathStruct>();
+    private List<PathStruct> pathList = new List<PathStruct>();
 
-    int turnCounter = 0;
+    private int turnCounter = 0;
 
-    Dictionary<Vector2,GameObject> gridPositions = new Dictionary<Vector2, GameObject>();
+    private Dictionary<Vector2,GameObject> gridPositions = new Dictionary<Vector2, GameObject>();
 
     
     public static GridManager Instance { get; private set; }
@@ -59,23 +59,23 @@ public class GridManager : MonoBehaviour
     public UnityEvent SpawnStartButton;
 
     [SerializeField]
-    GameObject GameOverObject;
+    private GameObject GameOverObject;
     
-    List<GameObject> trains = new List<GameObject>();
+    private List<GameObject> trains = new List<GameObject>();
 
     [SerializeField]
-    Sprite startingStationSprite;
+    private Sprite startingStationSprite;
     [SerializeField]
-    Sprite endingStationSprite;
+    private Sprite endingStationSprite;
 
     [SerializeField]
-    List<Vector2> excludePositions = new List<Vector2>();
+    private List<Vector2> excludePositions = new List<Vector2>();
 
     
 
-    List<Vector2> trainPositions = new List<Vector2>();
+    private List<Vector2> trainPositions = new List<Vector2>();
 
-    bool SpawnedTrains;
+    
     [SerializeField]
     private float gameOverScreenTimer;
     
@@ -120,7 +120,7 @@ public class GridManager : MonoBehaviour
         return Color.white;
     }
 
-    void MakeGrid()
+    private void MakeGrid()
     {
         SetCameraPosition();
         for (int i = 0; i < gridSizeX; i++)
@@ -140,14 +140,14 @@ public class GridManager : MonoBehaviour
         
     }
 
-    void SetCameraPosition()
+    private void SetCameraPosition()
     {
         Camera.main.transform.position = new Vector3(gridSizeX/2, gridSizeY/2,Camera.main.transform.position.z);
        
         
     }
 
-    void SetStartingAndEndingPoints()
+    private void SetStartingAndEndingPoints()
     {
         foreach(var item in trainDataList)
         {
@@ -170,7 +170,7 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    GameObject GetGridObjectAtPosition(Vector2 position)
+    private GameObject GetGridObjectAtPosition(Vector2 position)
     {
         gridPositions.TryGetValue(position, out GameObject gridObj);
         return gridObj;
@@ -200,15 +200,15 @@ public class GridManager : MonoBehaviour
         foreach(var item in trainDataList)
         {
             GameObject trainRef = Instantiate(trainObject, item.startingPos, Quaternion.identity);
+            AddToTrainPositions(trainRef.transform.position);
+            trains.Add(trainRef);
             Train trainScript = trainRef.GetComponent<Train>();
             trainScript.SetTrainIndex(trainDataList.FindIndex(data=>data.trainName == item.trainName));
             trainScript.SetColor(item.trainColor);
             trainScript.SetFinalPosition(item.endingPos);
-            AddToTrainPositions(trainRef.transform.position);
-            trains.Add(trainRef);
-            trainScript.StartCoroutine(trainScript.MoveOnPath());
-            
-            
+            //Not too sure how to move this around I can compress all the value setting to 1 function but I will still have to call it and will do the same thing
+
+
         }
     }
     void AddPointToPath(int pathIndex,Vector2 gridPos)
@@ -279,9 +279,11 @@ public class GridManager : MonoBehaviour
     public void UpdateTrainPositions(int index,Vector2 modifiedPosition)
     {
         trainPositions[index] = modifiedPosition;
+        CheckForCollision();
+        CheckForEndLevel();
     }
 
-    public void CheckForCollision()
+    private void CheckForCollision()
     {
         bool hasCollided = trainPositions.Count != trainPositions.Distinct().Count();
         if(hasCollided)
@@ -290,8 +292,9 @@ public class GridManager : MonoBehaviour
             {
                 
                 item.SetActive(false);
-                StartCoroutine(GameOverEnumerator());
+                
             }
+            StartCoroutine(GameOverEnumerator());
         }
     }
     IEnumerator GameOverEnumerator()
@@ -305,7 +308,7 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    public void CheckForEndLevel()
+    private void CheckForEndLevel()
     {
         int i = 0;
         int levelCompleteCheck = 0;

@@ -14,10 +14,7 @@ public class Train : MonoBehaviour
 
     Vector2 finalPosition;
 
-    private void Start()
-    {
-        
-    }
+    
 
     public void SetColor(Color trainColor)
     {
@@ -32,6 +29,7 @@ public class Train : MonoBehaviour
     public void SetFinalPosition(Vector2 finalPos)
     {
         finalPosition = finalPos;
+        StartCoroutine(MoveOnPath());
     }
     public IEnumerator MoveOnPath()
     {
@@ -43,8 +41,7 @@ public class Train : MonoBehaviour
 
             transform.position = GridManager.Instance.GetPositionFromPath(trainIndex, pathPositionIndex);
             GridManager.Instance.UpdateTrainPositions(trainIndex, transform.position);
-            GridManager.Instance.CheckForCollision();
-            GridManager.Instance.CheckForEndLevel();
+            
             Vector2 Vec2Pos = new Vector2(transform.position.x, transform.position.y);
             
             if (Vec2Pos == finalPosition)
